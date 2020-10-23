@@ -5,6 +5,7 @@ const upload = require("../middlewares/upload");
 
 let routes = (app) => {
   router.post("/upload", upload.single("file"), csvController.upload);
+  router.post("/update", upload.single("file"), csvController.update);
   router.get("/companies", csvController.getCompanies);
 
   app.use("/api/csv", router);
