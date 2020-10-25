@@ -2,9 +2,9 @@
 
 ## Setup Project
 
-⋅⋅* Clone the Git repository into a local folder
-⋅⋅* Edit the file `src/config/db.config.js` with your MySQL credentials;
-⋅⋅* Open the folder in terminal and run `npm install` to install dependencies.
+* Clone the Git repository into a local folder
+* Edit the file `src/config/db.config.js` with your MySQL credentials;
+* Open the folder in terminal and run `npm install` to install dependencies.
 
 ## 1 - Load treated company data in a database
 
