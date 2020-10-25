@@ -22,4 +22,6 @@ db.sequelize = sequelize;
 
 db.companies = require("./companies.model.js")(sequelize, Sequelize);
 
+db.newCompanies = require("./newcompanies.model.js")(sequelize, Sequelize);
+
 module.exports = db;

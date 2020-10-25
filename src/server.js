@@ -9,10 +9,10 @@ const initRoutes = require("./routes/companies.routes");
 app.use(express.urlencoded({ extended: true }));
 initRoutes(app);
 
-db.sequelize.sync();
-//db.sequelize.sync({ force: true }).then(() => {
-//  console.log("Drop and re-sync db.");
-//});
+db.companies.sync();
+/* db.sequelize.sync({ force: true }).then(() => {
+  console.log("Drop and re-sync db.");
+}); */
 
 let port = 8080;
 app.listen(port, () => {

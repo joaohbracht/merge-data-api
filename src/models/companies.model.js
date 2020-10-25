@@ -6,7 +6,7 @@ module.exports = (sequelize, Sequelize) => {
     name: {
       type: Sequelize.STRING
     },
-    addressZip: {
+    zip: {
       type: Sequelize.STRING
     }
   });
@@ -15,7 +15,7 @@ module.exports = (sequelize, Sequelize) => {
   let path = __basedir + "/src/uploads/q1_catalog.csv";
 
   fs.createReadStream(path)
-    .pipe(csv.parse({ headers: true, delimiter: ';' }))
+    .pipe(csv.parse({ headers: ['name', 'zip'], renameHeaders: true, delimiter: ';' }))
     .on("error", (error) => {
       throw error.message;
     })

@@ -1,110 +1,67 @@
 const Umzug = require('umzug')
 const db = require("../models");
-const Company = db.companies;
+const newCompany = db.newCompanies;
 const sequelize = db.sequelize;
+const Sequelize = db.Sequelize;
 
 const fs = require("fs");
 const csv = require("fast-csv");
 
-const upload = async (req, res) => {
+const update = (req, res) => {
   try {
-    if (req.file == undefined) {
-      return res.status(400).send("Please upload a CSV file!");
-    }
 
-    let companies = [];
-    let path = __basedir + "/src/uploads/" + req.file.filename;
+    const umzug = new Umzug({
+      migrations: {
+        path: (__basedir + "/src/migrations/"),
+        pattern: /\.js$/,
+        params: [sequelize.getQueryInterface()]
+      },
+      storage: 'sequelize',
+      storageOptions: { sequelize: sequelize }
+    })
 
-    fs.createReadStream(path)
-      .pipe(csv.parse({ headers: true, delimiter: ';' }))
-      .on("error", (error) => {
-        throw error.message;
-      })
-      .on("data", (row) => {
-        companies.push(row);
-      })
-      .on("end", () => {
-        Company.bulkCreate(companies)
-          .then(() => {
-            res.status(200).send({
-              message:
-                "Uploaded the file successfully: " + req.file.originalname,
-            });
+    let path = __basedir + "/src/uploads/q2_clientData.csv";
+
+    umzug.up()
+      .then(() => {
+        console.log('All migrations performed successfully')
+
+        fs.createReadStream(path)
+          .pipe(csv.parse({ headers: ['name', undefined, 'website'], delimiter: ';' }))
+          .on("error", (error) => {
+            throw error.message;
           })
-          .catch((error) => {
-            res.status(500).send({
-              message: "Fail to import data into database!",
-              error: error.message,
+          .on("data", (row) => {
+            newCompany.findOne({ where: { name: row.name } })
+              .then((project) => {
+                project.update({
+                  website: row.website
+                })
+              })
+              .catch(() => {
+                console.log('Company not found')
+              });
+          })
+          .on("end", () => {
+            res.status(200).send({
+              message: "File uploaded!",
             });
           });
       });
+
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      message: "Could not upload the file: " + req.file.originalname,
-    });
-  }
-};
-
-const update = (req, res) => {
-  try {
-    if (req.file == undefined) {
-      return res.status(400).send("Please upload a CSV file!");
-    }
-
-    let companies = [];
-    let path = __basedir + "/src/uploads/" + req.file.filename;
-
-    fs.createReadStream(path)
-      .pipe(csv.parse({ headers: true, delimiter: ';' }))
-      .on("error", (error) => {
-        throw error.message;
-      })
-      .on("data", (row) => {
-        companies.push(row);
-      })
-      .on("end", () => {
-        const umzug = new Umzug({
-          migrations: {
-            path: (__basedir + "/src/migrations/"),
-            pattern: /\.js$/,
-            params: [
-              sequelize.getQueryInterface()
-            ]
-          },
-          storage: 'sequelize',
-          storageOptions: {
-            sequelize: sequelize
-          }
-        })
-
-          ; (async () => {
-            await umzug.up()
-            console.log('All migrations performed successfully')
-          })()
-            .then(() => {
-              res.status(200).send({
-                message:
-                  "Uploaded the file successfully: " + req.file.originalname,
-              });
-            })
-            .catch((error) => {
-              res.status(500).send({
-                message: "Fail to import data into database!",
-                error: error.message,
-              });
-            });
-      });
-  } catch (error) {
-    console.log(error);
-    res.status(500).send({
-      message: "Could not upload the file: " + req.file.originalname,
+      message: "Could not upload the file.",
     });
   }
 };
 
 const getCompanies = (req, res) => {
-  Company.findAll()
+
+  const Op = Sequelize.Op
+
+  newCompany.findAll({ where: { name: { [Op.startsWith]: req.body.name } }, attributes: { exclude: ['createdAt', 'updatedAt'] } })
     .then((data) => {
       res.send(data);
     })
@@ -117,7 +74,6 @@ const getCompanies = (req, res) => {
 };
 
 module.exports = {
-  upload,
   update,
   getCompanies
 };
