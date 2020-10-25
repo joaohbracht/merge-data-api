@@ -61,7 +61,9 @@ const getCompanies = (req, res) => {
 
   const Op = Sequelize.Op
 
-  newCompany.findAll({ where: { name: { [Op.startsWith]: req.body.name } }, attributes: { exclude: ['createdAt', 'updatedAt'] } })
+  newCompany.findAll({
+    where: { [Op.and]: [{ name: { [Op.startsWith]: req.body.name } }, { zip: req.body.zip }] }, attributes: { exclude: ['createdAt', 'updatedAt'] }
+  })
     .then((data) => {
       res.send(data);
     })

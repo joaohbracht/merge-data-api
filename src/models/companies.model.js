@@ -1,5 +1,6 @@
 const fs = require("fs");
 const csv = require("fast-csv");
+const { format } = require('@fast-csv/format');
 
 module.exports = (sequelize, Sequelize) => {
   const Company = sequelize.define("companies", {
@@ -15,7 +16,8 @@ module.exports = (sequelize, Sequelize) => {
   let path = __basedir + "/src/uploads/q1_catalog.csv";
 
   fs.createReadStream(path)
-    .pipe(csv.parse({ headers: ['name', 'zip'], renameHeaders: true, delimiter: ';' }))
+    .pipe(csv.parse({ headers: ['name', 'zip'], renameHeaders: true, delimiter: ';' })
+      .transform(data => ({ name: data.name.toUpperCase(), zip: data.zip })))
     .on("error", (error) => {
       throw error.message;
     })
